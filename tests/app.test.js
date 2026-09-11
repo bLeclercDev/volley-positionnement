@@ -99,4 +99,27 @@ describe('interface : du choix du poste au bilan', () => {
     expect(text()).toContain('Positionnement 5-1');
     expect(text()).toContain('Meilleurs scores');
   });
+
+  it('en cours de série, Réinitialiser le quiz et Changer de poste demandent confirmation puis agissent', () => {
+    click('#roles button[data-role="P"]');
+    click('#start');
+    expect(text()).toContain('Situation 1/18');
+    const session = buildSession({ role: 'P' });
+    tapCourt(session.situations[0].expected);
+    expect(text()).toContain('Bien placé');
+
+    window.confirm = () => false;
+    click('#reset');
+    expect(text()).toContain('Bien placé'); // refus : rien ne change
+    window.confirm = () => true;
+    click('#reset');
+    expect(text()).toContain('Situation 1/18');
+    expect(text()).toContain('Nous 0 – 0 Eux');
+    expect($('svg.answer')).not.toBeNull();
+
+    window.confirm = () => false;
+    click('#change'); // série vierge : pas de confirmation demandée
+    expect(text()).toContain('Positionnement 5-1');
+    expect(document.querySelectorAll('#roles button')).toHaveLength(7);
+  });
 });

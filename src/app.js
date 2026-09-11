@@ -154,6 +154,25 @@ function inset(sit) {
     </div>`;
 }
 
+// Barre d'actions commune aux écrans de jeu : recommencer la série ou changer de poste.
+function tools() {
+  return `<div class="row tools">
+      <button id="reset">Réinitialiser le quiz</button>
+      <button id="change">Changer de poste</button>
+    </div>`;
+}
+
+function bindTools() {
+  const started = state.current > 0 || state.results.length > 0;
+  const ok = (msg) => !started || window.confirm(msg);
+  app.querySelector('#reset').addEventListener('click', () => {
+    if (ok('Recommencer la série depuis le début ?')) dispatch((s) => S.start(s, { role: s.role, startRotation: pickStartRotation() }));
+  });
+  app.querySelector('#change').addEventListener('click', () => {
+    if (ok('Abandonner la série en cours et changer de poste ?')) dispatch(S.restart);
+  });
+}
+
 function renderQuestion() {
   const sit = S.currentSituation(state);
   app.innerHTML = `
@@ -161,12 +180,14 @@ function renderQuestion() {
     <p class="question">${esc(PHASE_LABEL[sit.phase])}</p>
     <p class="lead muted">Tu es <strong>${esc(ROLES[state.role].label)}</strong>. Tape ta position sur le terrain.</p>
     ${courtSvg({ tappable: true, cls: 'answer' })}
-    ${inset(sit)}`;
+    ${inset(sit)}
+    ${tools()}`;
   const svg = app.querySelector('svg.answer');
   svg.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     dispatch((s) => S.tap(s, svgPoint(svg, e)));
   });
+  bindTools();
 }
 
 function renderFeedback() {
@@ -192,8 +213,10 @@ function renderFeedback() {
     ${courtSvg({ tokens, extra })}
     ${sit.note ? `<p class="note">${esc(sit.note)}</p>` : ''}
     <button class="primary wide" id="next">${state.current + 1 < state.situations.length ? 'Situation suivante' : 'Voir le bilan'}</button>
-    ${inset(sit)}`;
+    ${inset(sit)}
+    ${tools()}`;
   app.querySelector('#next').addEventListener('click', () => dispatch(S.next));
+  bindTools();
 }
 
 function renderSummary() {
