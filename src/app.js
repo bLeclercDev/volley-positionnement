@@ -159,7 +159,7 @@ function renderQuestion() {
   app.innerHTML = `
     ${header(sit)}
     <p class="question">${esc(PHASE_LABEL[sit.phase])}</p>
-    <p class="muted">Tu es <strong>${esc(ROLES[state.role].label)}</strong>. Tape ta position sur le terrain.</p>
+    <p class="lead muted">Tu es <strong>${esc(ROLES[state.role].label)}</strong>. Tape ta position sur le terrain.</p>
     ${courtSvg({ tappable: true, cls: 'answer' })}
     ${inset(sit)}`;
   const svg = app.querySelector('svg.answer');
@@ -187,7 +187,8 @@ function renderFeedback() {
   const tokens = [...ghosts, { x: ex, y: ey, label: ROLES[state.role].short, kind: 'me', id: state.role }];
   app.innerHTML = `
     ${header(sit)}
-    <p class="verdict ${result.hit ? 'ok' : 'ko'}">${result.hit ? 'Bien placé !' : 'Pas là.'} <span class="muted" style="font-weight:400">La croix est ton tap, le cercle la zone attendue.</span></p>
+    <p class="question">${esc(PHASE_LABEL[sit.phase])}</p>
+    <p class="lead"><span class="verdict ${result.hit ? 'ok' : 'ko'}">${result.hit ? 'Bien placé !' : 'Pas là.'}</span> <span class="muted">La croix est ton tap, le cercle la zone attendue.</span></p>
     ${courtSvg({ tokens, extra })}
     ${sit.note ? `<p class="note">${esc(sit.note)}</p>` : ''}
     <button class="primary wide" id="next">${state.current + 1 < state.situations.length ? 'Situation suivante' : 'Voir le bilan'}</button>

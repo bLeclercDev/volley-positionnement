@@ -44,11 +44,13 @@
     .badge.serve { background: #e3f2e8; color: #1f6b3d; }
     .badge.receive { background: #fbe9e7; color: #8a2f28; }
     .question { font-size: 1.05rem; font-weight: 600; margin: 8px 0; }
+    /* Ligne sous la question : hauteur réservée (2 lignes) pour que le terrain ne bouge pas entre question et feedback. */
+    .lead { font-size: 0.95rem; line-height: 1.4; min-height: 2.8em; margin: 6px 0 8px; }
     svg.court { width: 100%; height: auto; display: block; touch-action: none; user-select: none; }
     svg.court.tappable { cursor: crosshair; }
     .inset { display: flex; gap: 12px; align-items: center; }
     .inset svg { width: 120px; flex: none; }
-    .verdict { font-weight: 700; font-size: 1.1rem; }
+    .verdict { font-weight: 700; }
     .verdict.ok { color: var(--ok); }
     .verdict.ko { color: var(--ko); }
     .note { background: #fbf6ea; border-left: 4px solid #e2b35a; padding: 8px 10px; border-radius: 6px; font-size: 0.92rem; }
