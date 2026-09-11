@@ -1,0 +1,4 @@
+#!/bin/sh
+# Lance la suite de tests avant chaque commit ; bloque le commit si elle est rouge.
+echo "pre-commit: npm test"
+npm test --silent || { echo "pre-commit: tests rouges, commit refusé."; exit 1; }

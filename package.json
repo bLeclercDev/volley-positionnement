@@ -1,0 +1,15 @@
+{
+  "name": "volley-positionnement",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Entraînement au positionnement volley (5-1) : réception et base 1, rotation par rotation.",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "serve": "npx --yes serve -l 5173 ."
+  },
+  "devDependencies": {
+    "vitest": "^3.2.7"
+  }
+}
