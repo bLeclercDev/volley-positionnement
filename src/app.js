@@ -11,7 +11,7 @@ const SCALE = 100;
 
 let state = S.initialState();
 let selectedRole = null;
-let randomStart = false;
+let randomStart = true;
 
 function dispatch(fn) {
   state = fn(state);

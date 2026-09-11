@@ -45,6 +45,10 @@ describe('interface : du choix du poste au bilan', () => {
     $('svg.pick .token[data-id="P"]').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
     expect($('#roles button[data-role="P"]').classList.contains('selected')).toBe(true);
     expect($('#start').disabled).toBe(false);
+    // Rotation aléatoire cochée par défaut : on la décoche pour un déroulé déterministe (P en 1).
+    expect($('#random').checked).toBe(true);
+    $('#random').checked = false;
+    $('#random').dispatchEvent(new window.Event('change', { bubbles: true }));
     click('#start');
     expect(text()).toContain('Situation 1/18');
     expect(text()).toContain('Nous 0 – 0 Eux');
