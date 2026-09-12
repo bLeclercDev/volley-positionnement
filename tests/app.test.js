@@ -88,7 +88,7 @@ describe('interface : du choix du poste au bilan', () => {
     expect(localStorage.getItem('volley-positionnement:best:P')).toBe('{"correct":12,"total":18}');
     click('#replay');
     expect(text()).toContain('Situation 1/6');
-    expect(text()).toContain('Réception');
+    expect($('.phases li.current').textContent).toContain('Réception');
   });
 
   it('Changer de poste ramène au choix du poste', () => {

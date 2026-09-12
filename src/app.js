@@ -1,6 +1,6 @@
 // Rendu DOM/SVG et branchement des événements. Toute la logique métier vit dans les autres modules.
-import { ROLES, lineup, ZONE_CENTER, zoneOf, isFrontRow, serverOf, backRowCentral } from './rotation.js';
-import { POSITIONS, DATA_ROLES, positionsFor } from './positions.js';
+import { ROLES, lineup, ZONE_CENTER, zoneOf, isFrontRow, serverOf, backRowCentral, frontRowR4 } from './rotation.js';
+import { POSITIONS, DATA_ROLES, PHASES, positionsFor } from './positions.js';
 import { PHASE_LABEL, PHASE_SHORT } from './session.js';
 import { TOLERANCE } from './evaluate.js';
 import * as S from './state.js';
@@ -58,9 +58,15 @@ function token({ x, y, label, kind = 'back', id = '', r = 5.5 }) {
   </g>`;
 }
 
+// Bande « camp adverse » au-dessus du filet (TOP) et marge sous la ligne de fond (BOTTOM) pour le pion
+// du serveur : identiques sur tous les terrains, pour que le dessin ne bouge jamais entre les écrans.
+const TOP = -16;
+const BOTTOM = 111;
+
 function courtSvg({ tokens = [], extra = '', tappable = false, cls = '' }) {
   const third = SCALE / 3;
-  return `<svg class="court ${tappable ? 'tappable' : ''} ${cls}" viewBox="-8 -9 116 117" role="img" aria-label="Terrain de volley">
+  return `<svg class="court ${tappable ? 'tappable' : ''} ${cls}" viewBox="-8 ${TOP} 116 ${BOTTOM - TOP}" role="img" aria-label="Terrain de volley">
+    <rect class="them" x="0" y="${TOP}" width="${SCALE}" height="${-TOP}" fill="var(--ink)" opacity="0.06"/>
     <line x1="-8" y1="0" x2="${SCALE + 8}" y2="0" stroke="var(--ink)" stroke-width="2"/>
     <rect x="0" y="0" width="${SCALE}" height="${third}" fill="var(--front)" opacity="0.55"/>
     <rect x="0" y="${third}" width="${SCALE}" height="${SCALE - third}" fill="var(--back)" opacity="0.55"/>
@@ -78,6 +84,63 @@ function svgPoint(svg, event) {
   pt.y = event.clientY;
   const p = pt.matrixTransform(svg.getScreenCTM().inverse());
   return [p.x / SCALE, p.y / SCALE];
+}
+
+// ---------- animation du ballon (écran de question) ----------
+// Ballon : cercle + 3 arcs (panneaux). Le trajet est piloté en CSS par les variables --x0/--y0 … --xN/--yN
+// (unités SVG suffixées « px »), lues dans les @keyframes de index.html. Pas de classe « token ».
+function ball({ points, cls }) {
+  const px = (v) => `${Math.round(v * SCALE * 100) / 100}px`;
+  const vars = points.map(([x, y], i) => `--x${i}:${px(x)};--y${i}:${px(y)}`).join(';');
+  const seam = '<path d="M-3.3 -1.1 Q0 0.9 3.3 -1.1" fill="none" stroke="var(--ink)" stroke-width="0.55"/>';
+  return `<g class="ball ${cls}" style="${vars}" aria-hidden="true">
+    <g class="ball-arc"><g class="ball-spin">
+      <circle r="3.5" fill="#fff" stroke="var(--ink)" stroke-width="0.7"/>
+      ${seam}<g transform="rotate(120)">${seam}</g><g transform="rotate(240)">${seam}</g>
+    </g></g>
+  </g>`;
+}
+
+const OPP_SERVER = [0.12, -0.16]; // serveur adverse, demi-visible en haut de la bande (leur zone 1 vue de chez nous)
+const OPP_BALL = [0.16, -0.12];
+
+// Couche animée qui raconte la phase : ne capte aucun tap (pointer-events="none").
+function animationLayer(sit) {
+  const { rotation, phase } = sit;
+  const me = (role) => (role === state.role ? 'me' : 'ghost');
+  const opp = `<circle class="opp" cx="${OPP_SERVER[0] * SCALE}" cy="${OPP_SERVER[1] * SCALE}" r="5.5" fill="#e6e9ec" stroke="var(--ghost)" stroke-width="0.8"/>`;
+  let inner = '';
+  if (phase === 'service') {
+    // Notre serveur derrière la ligne de fond : le ballon tourne dans sa main, puis part chez eux.
+    const server = serverOf(rotation);
+    inner =
+      token({ x: 0.88, y: 1.04, label: ROLES[server].short, id: server, kind: me(server) }) +
+      ball({ cls: 'fly-1', points: [[0.92, 0.995], [0.45, -0.12]] });
+  } else if (phase === 'reception') {
+    // Leur serveur : le ballon franchit le filet et tombe au fond (point fixe, pour ne pas souffler la réponse).
+    inner = opp + ball({ cls: 'fly-1', points: [OPP_BALL, [0.5, 0.72]] });
+  } else {
+    // Après réception : formation de réception en fantômes, réception (L) → passe (P) → attaque du R4 avant
+    // au filet → le ballon repart chez eux, puis les fantômes s'effacent : à toi de te replacer.
+    const R = positionsFor(rotation, 'reception');
+    const attack = [R[frontRowR4(rotation)][0], 0.08];
+    const ghosts = Object.entries(R)
+      .map(([role, [x, y]]) => token({ x, y, label: ROLES[role].short, id: role, kind: me(role) }))
+      .join('');
+    inner = opp + `<g class="ghosts">${ghosts}</g>` + ball({ cls: 'fly-4', points: [OPP_BALL, R.L, R.P, attack, [1 - attack[0], -0.13]] });
+  }
+  return `<g class="anim" pointer-events="none">${inner}</g>`;
+}
+
+// Frise des 3 phases du point, étape en cours surlignée.
+const PHASE_HINT = { service: 'on sert', reception: 'ils servent', apresReception: 'on a attaqué, on se replace' };
+
+function phaseStrip(phase) {
+  const i = PHASES.indexOf(phase);
+  return `<ol class="phases" aria-label="Déroulé du point">${PHASES.map(
+    (p, k) =>
+      `<li class="${k < i ? 'done' : k === i ? 'current' : ''}"${k === i ? ' aria-current="step"' : ''}><strong>${esc(PHASE_SHORT[p])}</strong><span>${esc(PHASE_HINT[p])}</span></li>`,
+  ).join('')}</ol>`;
 }
 
 function lineupTokens(rotation, { highlight = null, hideBackCentral = false } = {}) {
@@ -138,7 +201,8 @@ function header(sit) {
     <div class="row between muted">
       <span>Situation ${sit.index + 1}/${state.situations.length} · ${esc(PHASE_SHORT[sit.phase])}</span>
       <span class="badge">P en ${sit.rotation}</span>
-    </div>`;
+    </div>
+    ${phaseStrip(sit.phase)}`;
 }
 
 function inset(sit) {
@@ -178,8 +242,8 @@ function renderQuestion() {
   app.innerHTML = `
     ${header(sit)}
     <p class="question">${esc(PHASE_LABEL[sit.phase])}</p>
-    <p class="lead muted">Tu es <strong>${esc(ROLES[state.role].label)}</strong>. Tape ta position sur le terrain.</p>
-    ${courtSvg({ tappable: true, cls: 'answer' })}
+    <p class="lead muted">Tu es <strong>${esc(ROLES[state.role].label)}</strong>. Tape ta position sur le terrain. <button type="button" id="rewatch" class="link">↻ revoir</button></p>
+    ${courtSvg({ tappable: true, cls: 'answer', extra: animationLayer(sit) })}
     ${inset(sit)}
     ${tools()}`;
   const svg = app.querySelector('svg.answer');
@@ -187,6 +251,8 @@ function renderQuestion() {
     e.preventDefault();
     dispatch((s) => S.tap(s, svgPoint(svg, e)));
   });
+  // Re-rendre recrée les nœuds SVG : les animations CSS repartent de zéro.
+  app.querySelector('#rewatch').addEventListener('click', renderQuestion);
   bindTools();
 }
 
