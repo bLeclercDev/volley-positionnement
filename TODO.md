@@ -23,7 +23,6 @@
 - [ ] Étendre `positionsFor` avec une phase `defense` et un paramètre `from`, en réutilisant le
       mapping place → rôle de la fonction `base1`. Vérifier sur la fiche si passeur arrière et pointu
       arrière défendent différemment en zone 1 ; si oui, indexer par rôle pour cette place.
-- [ ] Étendre le mode `?edit` aux 3 formations de défense (sélecteur d'origine, export JSON).
 - [ ] Test de cohérence : contreurs au filet, tous les points dans [0, 1]. La règle 7.4 ne s'applique
       pas à l'attaque, pas de test de légalité.
 

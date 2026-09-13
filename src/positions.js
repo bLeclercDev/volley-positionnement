@@ -7,8 +7,7 @@
 //   C : le central AVANT de la rotation (Ca ou Cb, voir rotation.js)
 //   L : le libéro, qui occupe la place du central arrière (sauf quand ce central sert : P2 et P5)
 // `base1` sert pour les phases `service` et `apresReception` ; `reception` pour la phase `reception`.
-// Les coordonnées sont approximatives (lecture d'une photo) : le mode ?edit de l'appli permet de les
-// ajuster et d'exporter ce bloc.
+// Les coordonnées sont approximatives (lecture d'une photo).
 
 import { backRowCentral, frontRowCentral, serverOf } from './rotation.js';
 

@@ -42,8 +42,7 @@ Séparation stricte logique / DOM, dans cet ordre de dépendance :
 - `src/state.js` : machine à états **pure** (`role` → `question` → `feedback` → `summary`),
   `replayErrors` pose `replay: true` pour que le bilan ne compte pas comme meilleur score.
 - `src/app.js` : seul module qui touche le DOM/SVG. `dispatch(fn)` applique une fonction d'état puis
-  `render()` choisit l'écran selon `state.screen`. Contient aussi le mode calibrage `?edit`
-  (glisser les pions, export JSON à recopier dans `POSITIONS`) et le meilleur score par rôle en
+  `render()` choisit l'écran selon `state.screen`. Contient aussi le meilleur score par rôle en
   localStorage (`volley-positionnement:best:<role>`, `{ correct, total }`, purgé si `total` ne
   correspond plus à la longueur de série du rôle).
 
@@ -53,9 +52,8 @@ Le terrain SVG est normalisé : coordonnées × `SCALE` (100), avec une bande ad
 ## Tests
 
 - Tests purs (`rotation`, `positions`, `session`, `evaluate`, `state`) sans DOM.
-- Tests d'interface (`app*.test.js`) en jsdom via le commentaire `// @vitest-environment jsdom` ;
-  `app-edit.test.js` force l'URL `?edit` avec `@vitest-environment-options`. jsdom n'a pas de
-  géométrie SVG : chaque fichier stubbe `createSVGPoint`/`getScreenCTM` et simule un tap par
+- Tests d'interface (`app*.test.js`) en jsdom via le commentaire `// @vitest-environment jsdom`.
+  jsdom n'a pas de géométrie SVG : chaque fichier stubbe `createSVGPoint`/`getScreenCTM` et simule un tap par
   `pointerdown` + `pointerup` au même point. Les tests d'`app.test.js` s'enchaînent dans l'ordre
   (un seul `import` de `src/app.js` dans `beforeAll`), donc l'état DOM d'un test dépend du précédent :
   ne pas les filtrer avec `-t`, lancer le fichier entier.

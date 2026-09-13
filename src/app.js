@@ -1,12 +1,11 @@
 // Rendu DOM/SVG et branchement des événements. Toute la logique métier vit dans les autres modules.
 import { ROLES, lineup, ZONE_CENTER, zoneOf, isFrontRow, serverOf, backRowCentral, frontRowR4 } from './rotation.js';
-import { POSITIONS, DATA_ROLES, PHASES, positionsFor } from './positions.js';
+import { PHASES, positionsFor } from './positions.js';
 import { PHASE_LABEL, PHASE_SHORT, buildSession } from './session.js';
 import { TOLERANCE } from './evaluate.js';
 import * as S from './state.js';
 
 const app = document.getElementById('app');
-const EDIT_MODE = new URLSearchParams(location.search).has('edit');
 const SCALE = 100;
 
 let state = S.initialState();
@@ -233,8 +232,7 @@ function renderRole() {
       </table>
     </div>`
         : ''
-    }
-    <p class="kbd">Astuce coach : ajoute <code>?edit</code> à l’adresse pour ajuster les positions.</p>`;
+    }`;
 
   const pick = (role) => {
     selectedRole = role;
@@ -371,84 +369,8 @@ function renderSummary() {
   app.querySelector('#restart').addEventListener('click', () => dispatch(S.restart));
 }
 
-// ---------- mode calibrage (?edit) ----------
-const edit = { rotation: 1, formation: 'reception', data: structuredClone(POSITIONS) };
-
-function exportJson() {
-  const out = {};
-  for (const k of [1, 2, 3, 4, 5, 6]) {
-    out[k] = {};
-    for (const f of ['reception', 'base1']) {
-      out[k][f] = {};
-      for (const role of DATA_ROLES) out[k][f][role] = edit.data[k][f][role].map((v) => Math.round(v * 1000) / 1000);
-    }
-  }
-  return JSON.stringify(out, null, 2);
-}
-
-function renderEdit() {
-  const formation = edit.data[edit.rotation][edit.formation];
-  const tokens = DATA_ROLES.map((role) => {
-    const [x, y] = formation[role];
-    const front = role === 'C' || (role !== 'L' && isFrontRow(zoneOf(role, edit.rotation)));
-    return { x, y, label: role === 'C' ? 'C' : ROLES[role].short, kind: front ? 'front' : 'back', id: role, r: 6.5 };
-  });
-  app.innerHTML = `
-    <h1>Calibrage des positions</h1>
-    <p class="muted">Glisse les pions, puis copie le JSON et remplace les coordonnées dans <code>src/positions.js</code> (ou envoie-le au dev). C = central avant, L = place du central arrière.</p>
-    <div class="row">
-      <label>Rotation <select id="rot">${[1, 2, 3, 4, 5, 6].map((k) => `<option value="${k}" ${k === edit.rotation ? 'selected' : ''}>P en ${k}</option>`).join('')}</select></label>
-      <label>Formation <select id="form"><option value="reception" ${edit.formation === 'reception' ? 'selected' : ''}>Réception</option><option value="base1" ${edit.formation === 'base1' ? 'selected' : ''}>Base 1</option></select></label>
-    </div>
-    ${courtSvg({ tokens, tappable: true, cls: 'edit' })}
-    <div class="row"><button class="primary" id="copy">Copier le JSON</button><span id="copied" class="muted"></span></div>
-    <textarea id="json" readonly>${esc(exportJson())}</textarea>`;
-
-  const svg = app.querySelector('svg.edit');
-  let dragging = null;
-  svg.querySelectorAll('.token').forEach((t) => {
-    t.addEventListener('pointerdown', (e) => {
-      dragging = t.dataset.id;
-      svg.setPointerCapture(e.pointerId);
-      e.preventDefault();
-    });
-  });
-  svg.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-    const [x, y] = svgPoint(svg, e).map((v) => Math.min(1.05, Math.max(-0.05, v)));
-    formation[dragging] = [x, y];
-    svg.querySelector(`.token[data-id="${dragging}"]`).setAttribute('transform', `translate(${x * SCALE} ${y * SCALE})`);
-  });
-  const stop = () => {
-    if (!dragging) return;
-    dragging = null;
-    app.querySelector('#json').value = exportJson();
-  };
-  svg.addEventListener('pointerup', stop);
-  svg.addEventListener('pointercancel', stop);
-  app.querySelector('#rot').addEventListener('change', (e) => {
-    edit.rotation = Number(e.target.value);
-    renderEdit();
-  });
-  app.querySelector('#form').addEventListener('change', (e) => {
-    edit.formation = e.target.value;
-    renderEdit();
-  });
-  app.querySelector('#copy').addEventListener('click', async () => {
-    const text = exportJson();
-    try {
-      await navigator.clipboard.writeText(text);
-      app.querySelector('#copied').textContent = 'Copié.';
-    } catch {
-      app.querySelector('#json').select();
-      app.querySelector('#copied').textContent = 'Sélectionne le texte et copie-le.';
-    }
-  });
-}
-
 // ---------- routeur ----------
 function render() {
-  if (EDIT_MODE) return renderEdit();
   ({ role: renderRole, question: renderQuestion, feedback: renderFeedback, summary: renderSummary })[state.screen]();
   window.scrollTo({ top: 0 });
 }

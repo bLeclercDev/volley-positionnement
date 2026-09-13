@@ -43,8 +43,7 @@ git config core.hooksPath .githooks
 ## Ajuster les positions
 
 Les coordonnées de `src/positions.js` sont lues sur la photo de la fiche : elles sont approximatives.
-Ouvrir l'appli avec `?edit` à la fin de l'adresse, glisser les pions, « Copier le JSON », puis
-reporter les valeurs dans `POSITIONS`. Le test `tests/positions.test.js` vérifie que chaque
+Modifier les valeurs dans `POSITIONS` ; le test `tests/positions.test.js` vérifie que chaque
 réception reste légale (règle 7.4).
 
 ## Structure
