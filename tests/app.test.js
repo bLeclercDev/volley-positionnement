@@ -99,9 +99,11 @@ describe('interface : du choix du poste au bilan', () => {
       click('#next');
     });
     expect(text()).toContain('6 / 6');
+    // Le rejeu ne compte pas comme meilleur score : la série complète (12/18) reste la référence.
+    expect(localStorage.getItem('volley-positionnement:best:P')).toBe('{"correct":12,"total":18}');
     click('#restart');
     expect(text()).toContain('Positionnement 5-1');
-    expect(text()).toContain('Meilleurs scores');
+    expect(text()).toContain('Meilleurs scores : Passeur 12/18');
   });
 
   it('en cours de série, Réinitialiser le quiz et Changer de poste demandent confirmation puis agissent', () => {

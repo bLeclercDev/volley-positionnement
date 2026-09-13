@@ -287,7 +287,7 @@ function renderFeedback() {
 
 function renderSummary() {
   const sum = S.summary(state);
-  saveBest(state.role, sum.correct, sum.total);
+  if (!state.replay) saveBest(state.role, sum.correct, sum.total);
   const best = readBest(state.role);
   app.innerHTML = `
     <h1>Bilan · ${esc(ROLES[state.role].label)}</h1>

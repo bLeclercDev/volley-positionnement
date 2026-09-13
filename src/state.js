@@ -4,7 +4,7 @@ import { buildSession } from './session.js';
 import { isHit } from './evaluate.js';
 
 export function initialState() {
-  return { screen: 'role', role: null, startRotation: 1, situations: [], current: 0, results: [] };
+  return { screen: 'role', role: null, startRotation: 1, situations: [], current: 0, results: [], replay: false };
 }
 
 export function currentSituation(state) {
@@ -13,7 +13,7 @@ export function currentSituation(state) {
 
 export function start(state, { role, startRotation = 1 }) {
   const session = buildSession({ role, startRotation });
-  return { ...state, screen: 'question', role, startRotation, situations: session.situations, current: 0, results: [] };
+  return { ...state, screen: 'question', role, startRotation, situations: session.situations, current: 0, results: [], replay: false };
 }
 
 export function tap(state, point) {
@@ -41,7 +41,8 @@ export function replayErrors(state) {
   const { failed } = summary(state);
   if (failed.length === 0) return state;
   const situations = failed.map((s, index) => ({ ...s, index }));
-  return { ...state, screen: 'question', situations, current: 0, results: [] };
+  // `replay` : ce n'est pas une série complète du poste, le bilan ne doit pas compter comme meilleur score.
+  return { ...state, screen: 'question', situations, current: 0, results: [], replay: true };
 }
 
 export function restart(state) {

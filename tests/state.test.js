@@ -27,6 +27,7 @@ describe('machine à états de l entraînement', () => {
     expect(s.current).toBe(0);
     expect(currentSituation(s).id).toBe('P1-service');
     expect(s.results).toEqual([]);
+    expect(s.replay).toBe(false);
   });
 
   it('tap évalue la position et passe en feedback sans avancer', () => {
@@ -86,8 +87,17 @@ describe('machine à états de l entraînement', () => {
     expect(replay.situations.map((x) => x.index)).toEqual([0, 1, 2]);
     expect(replay.results).toEqual([]);
     expect(replay.role).toBe('P');
+    expect(replay.replay).toBe(true);
+    expect(replay.startRotation).toBe(1);
     const end2 = playAll(replay, () => true);
     expect(summary(end2)).toMatchObject({ total: 3, correct: 3, failed: [] });
+  });
+
+  it('start après un rejeu redonne une série complète, sans le marqueur replay', () => {
+    const end = playAll(startedP(), (sit) => sit.rotation !== 4);
+    const again = start(replayErrors(end), { role: 'P', startRotation: 1 });
+    expect(again.replay).toBe(false);
+    expect(again.situations).toHaveLength(18);
   });
 
   it('replayErrors sans erreur laisse le bilan tel quel', () => {
