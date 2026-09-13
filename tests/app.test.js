@@ -30,6 +30,8 @@ function tapCourt([x, y]) {
 beforeAll(async () => {
   stubSvgGeometry();
   document.body.innerHTML = '<main id="app"></main>';
+  // Ancien meilleur score issu d'un rejeu d'erreurs (2/2 = 100 %, imbattable) : il doit être ignoré et purgé.
+  localStorage.setItem('volley-positionnement:best:R4b', '{"correct":2,"total":2}');
   await import('../src/app.js');
 });
 
@@ -39,6 +41,8 @@ describe('interface : du choix du poste au bilan', () => {
     expect(document.querySelectorAll('#roles button')).toHaveLength(7);
     expect($('#start').disabled).toBe(true);
     expect(document.querySelectorAll('svg.pick .token')).toHaveLength(6);
+    expect(text()).not.toContain('Meilleurs scores');
+    expect(localStorage.getItem('volley-positionnement:best:R4b')).toBeNull();
   });
 
   it('sélectionner un poste sur le schéma active Commencer et lance la première situation', () => {

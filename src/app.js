@@ -1,7 +1,7 @@
 // Rendu DOM/SVG et branchement des événements. Toute la logique métier vit dans les autres modules.
 import { ROLES, lineup, ZONE_CENTER, zoneOf, isFrontRow, serverOf, backRowCentral, frontRowR4 } from './rotation.js';
 import { POSITIONS, DATA_ROLES, PHASES, positionsFor } from './positions.js';
-import { PHASE_LABEL, PHASE_SHORT } from './session.js';
+import { PHASE_LABEL, PHASE_SHORT, buildSession } from './session.js';
 import { TOLERANCE } from './evaluate.js';
 import * as S from './state.js';
 
@@ -26,10 +26,18 @@ function pickStartRotation() {
 function bestKey(role) {
   return `volley-positionnement:best:${role}`;
 }
+// Nombre de situations d'une série complète du rôle. Un score enregistré avec un autre total (par exemple
+// un ancien rejeu d'erreurs à 2/2) ne représente pas le poste et serait imbattable en % : on l'ignore et on le purge.
+function seriesLength(role) {
+  return buildSession({ role }).situations.length;
+}
 function readBest(role) {
   try {
     const raw = localStorage.getItem(bestKey(role));
-    return raw ? JSON.parse(raw) : null;
+    const best = raw ? JSON.parse(raw) : null;
+    if (best && best.total === seriesLength(role)) return best;
+    if (raw) localStorage.removeItem(bestKey(role));
+    return null;
   } catch {
     return null;
   }
