@@ -59,6 +59,13 @@
 - [ ] Frise des phases dynamique par échange (service → défense, ou réception → base 1 → défense).
 - [ ] Libellé et animation par origine : « Ils attaquent en 4, où es-tu ? », balle partant de leur
       attaquant dans la bande adverse.
+- [ ] Ergonomie mobile, défilement : on ne peut pas scroller en posant le doigt sur le terrain, le
+      `pointerdown` valide la réponse tout de suite (`src/app.js`, `touch-action: none` dans `index.html`).
+      Piste : valider au `pointerup` seulement si le doigt n'a pas bougé, ou passer en `touch-action: pan-y`
+      et ignorer les gestes de défilement.
+- [ ] Ergonomie mobile, agencement : revoir l'écran de question pour que score, phase et terrain tiennent
+      sur un écran. Cacher ou replier certaines infos (encart « Ordre de rotation », frise des phases, note
+      pédagogique).
 
 ## E. Tests
 
