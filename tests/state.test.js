@@ -75,7 +75,7 @@ describe('machine à états de l entraînement', () => {
     const sum = summary(end);
     expect(sum.total).toBe(18);
     expect(sum.correct).toBe(12);
-    expect(sum.failed.map((x) => x.id)).toEqual(['P1-reception', 'P2-reception', 'P3-reception', 'P4-reception', 'P5-reception', 'P6-reception']);
+    expect(sum.failed.map((x) => x.id)).toEqual(['P1-reception', 'P6-reception', 'P5-reception', 'P4-reception', 'P3-reception', 'P2-reception']);
   });
 
   it('replayErrors rejoue uniquement les situations ratées, dans l ordre', () => {

@@ -13,14 +13,14 @@ describe('buildSession : la séquence service → réception → après récepti
     expect(phasesOf(s)).toEqual(Array(6).fill(['service', 'reception', 'apresReception']).flat());
   });
 
-  it('ne tourne qu après le point gagné en réception : la rotation est constante sur un triplet', () => {
+  it('tourne dans le sens horaire (P en 1 → 6 → 5 → 4 → 3 → 2), seulement après le point gagné en réception', () => {
     const s = buildSession({ role: 'P' });
-    expect(rotationsOf(s)).toEqual([1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6]);
+    expect(rotationsOf(s)).toEqual([1, 1, 1, 6, 6, 6, 5, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2, 2]);
   });
 
-  it('accepte une rotation de départ et boucle de 6 à 1', () => {
+  it('accepte une rotation de départ et boucle de 1 à 6', () => {
     const s = buildSession({ role: 'P', startRotation: 5 });
-    expect(rotationsOf(s)).toEqual([5, 5, 5, 6, 6, 6, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4]);
+    expect(rotationsOf(s)).toEqual([5, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2, 2, 1, 1, 1, 6, 6, 6]);
   });
 
   it('fait tourner le score : on perd au service, on gagne en réception', () => {
@@ -48,7 +48,7 @@ describe('buildSession : la séquence service → réception → après récepti
     const s = buildSession({ role: 'O' });
     expect(s.situations.map((x) => x.index)).toEqual([...Array(18).keys()]);
     expect(new Set(s.situations.map((x) => x.id)).size).toBe(18);
-    expect(s.situations[4].id).toBe('P2-reception');
+    expect(s.situations[4].id).toBe('P6-reception');
   });
 
   it('donne 16 situations au libéro : absent au service en P2 et P5', () => {
@@ -72,8 +72,8 @@ describe('buildSession : la séquence service → réception → après récepti
 
   it('garde le score global cohérent même quand des situations sont sautées', () => {
     const s = buildSession({ role: 'L' });
-    const rec2 = s.situations.find((x) => x.rotation === 2 && x.phase === 'reception');
-    expect(rec2.score).toEqual({ us: 1, them: 2 });
+    const rec6 = s.situations.find((x) => x.rotation === 6 && x.phase === 'reception');
+    expect(rec6.score).toEqual({ us: 1, them: 2 });
   });
 
   it('joint la note pédagogique de la fiche quand elle existe', () => {
