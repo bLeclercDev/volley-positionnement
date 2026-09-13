@@ -136,7 +136,25 @@ describe('interface : du choix du poste au bilan', () => {
     expect(localStorage.getItem('volley-positionnement:best:P')).toBe('{"correct":12,"total":18}');
     click('#restart');
     expect(text()).toContain('Positionnement 5-1');
-    expect(text()).toContain('Meilleurs scores : Passeur 12/18');
+    expect(text()).toContain('Meilleurs scores');
+    const rows = document.querySelectorAll('.bests tbody tr');
+    expect(rows).toHaveLength(1);
+    expect([...rows[0].cells].map((c) => c.textContent)).toEqual(['Passeur', '12/18', '67 %']);
+  });
+
+  it('le tableau des meilleurs scores est trié par % décroissant, vert à 100 % puis teinté selon le %', () => {
+    localStorage.setItem('volley-positionnement:best:L', JSON.stringify({ correct: 16, total: 16 }));
+    localStorage.setItem('volley-positionnement:best:Ca', JSON.stringify({ correct: 5, total: 10 }));
+    click('#roles button[data-role="P"]'); // re-rend l'écran de choix du poste
+    const rows = [...document.querySelectorAll('.bests tbody tr')];
+    expect(rows.map((r) => r.cells[0].textContent)).toEqual(['Libéro', 'Passeur', 'Central côté pointu']);
+    expect(rows.map((r) => r.cells[2].textContent)).toEqual(['100 %', '67 %', '50 %']);
+    const tint = (r) => r.getAttribute('style');
+    expect(tint(rows[0])).toContain('var(--ok-bg)');
+    expect(tint(rows[1])).toBe('--tint: hsl(37 85% 88%)');
+    expect(tint(rows[2])).toBe('--tint: hsl(28 85% 88%)');
+    localStorage.removeItem('volley-positionnement:best:L');
+    localStorage.removeItem('volley-positionnement:best:Ca');
   });
 
   it('en cours de série, Réinitialiser le quiz et Changer de poste demandent confirmation puis agissent', () => {

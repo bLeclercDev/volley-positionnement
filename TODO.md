@@ -71,6 +71,13 @@
       fin de set correcte, libéro absent quand le central sert, position attendue présente partout.
 - [ ] Test statistique : sur 1000 sets, le serveur perd 70 % ± 3 %.
 
+## F. Outillage Claude Code
+
+- [ ] Lancer `/init` pour générer le `CLAUDE.md` du projet (stack, commandes `npm test` / `npm run serve`,
+      conventions du code).
+- [ ] Ajouter une règle qui empêche Claude de pousser : interdire `git push` dans les permissions
+      (`deny` dans `.claude/settings.json`) et le rappeler dans `CLAUDE.md`.
+
 ## Autres idées
 
 - **Répétition espacée légère** : stocker les échecs par situation et pondérer le tirage vers ce

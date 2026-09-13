@@ -46,6 +46,10 @@ function readBest(role) {
     return null;
   }
 }
+// Fond de la ligne du tableau des meilleurs scores : vert à 100 %, sinon dégradé rouge (0 %) → orange → jaune.
+function bestTint(pct) {
+  return pct >= 1 ? 'var(--ok-bg)' : `hsl(${Math.round(pct * 55)} 85% 88%)`;
+}
 function saveBest(role, correct, total) {
   try {
     const prev = readBest(role);
@@ -194,7 +198,9 @@ function lineupTokens(rotation, { highlight = null, hideBackCentral = false } = 
 function renderRole() {
   const bests = Object.keys(ROLES)
     .map((r) => [r, readBest(r)])
-    .filter(([, b]) => b);
+    .filter(([, b]) => b)
+    .map(([role, b]) => ({ role, ...b, pct: b.correct / b.total }))
+    .sort((a, b) => b.pct - a.pct);
   app.innerHTML = `
     <h1>Positionnement 5-1</h1>
     <p class="muted">Réception et base 1, rotation par rotation. Choisis ton poste : le score tourne, à toi de te placer.</p>
@@ -212,7 +218,22 @@ function renderRole() {
       <label class="check"><input type="checkbox" id="random" ${randomStart ? 'checked' : ''}> Rotation de départ aléatoire</label>
       <button class="primary wide" id="start" ${selectedRole ? '' : 'disabled'}>Commencer</button>
     </div>
-    ${bests.length ? `<p class="muted">Meilleurs scores : ${bests.map(([r, b]) => `${esc(ROLES[r].label)} ${b.correct}/${b.total}`).join(' · ')}</p>` : ''}
+    ${
+      bests.length
+        ? `<div class="card bests">
+      <h2>Meilleurs scores</h2>
+      <table>
+        <thead><tr><th>Poste</th><th>Score</th><th>%</th></tr></thead>
+        <tbody>${bests
+          .map(
+            (b) =>
+              `<tr style="--tint: ${bestTint(b.pct)}"><td>${esc(ROLES[b.role].label)}</td><td>${b.correct}/${b.total}</td><td>${Math.round(b.pct * 100)} %</td></tr>`
+          )
+          .join('')}</tbody>
+      </table>
+    </div>`
+        : ''
+    }
     <p class="kbd">Astuce coach : ajoute <code>?edit</code> à l’adresse pour ajuster les positions.</p>`;
 
   const pick = (role) => {
