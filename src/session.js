@@ -1,4 +1,4 @@
-import { ROLES } from './rotation.js';
+import { ROLES, isCentral } from './rotation.js';
 import { PHASES, positionsFor, noteFor } from './positions.js';
 
 export const PHASE_LABEL = {
@@ -18,14 +18,15 @@ export const PHASE_SHORT = {
  * service (on perd le point) → réception → après réception (on gagne le point) → rotation suivante.
  * La rotation est horaire : le passeur passe de la zone 1 à la 6, puis 5, 4, 3, 2.
  * Les situations où le rôle n'est pas sur le terrain sont omises.
+ * Un central s'entraîne sans libéro : il doit connaître les 18 places, au cas où il n'y en a pas.
  */
-export function buildSession({ role, startRotation = 1 }) {
+export function buildSession({ role, startRotation = 1, libero = !isCentral(role) }) {
   if (!ROLES[role]) throw new Error(`Rôle inconnu : ${role}`);
   const situations = [];
   for (let i = 0; i < 6; i++) {
     const rotation = ((startRotation - 1 - i + 6) % 6) + 1;
     for (const phase of PHASES) {
-      const expected = positionsFor(rotation, phase)[role];
+      const expected = positionsFor(rotation, phase, { libero })[role];
       if (!expected) continue;
       const weServe = phase === 'service';
       situations.push({
@@ -40,5 +41,5 @@ export function buildSession({ role, startRotation = 1 }) {
       });
     }
   }
-  return { role, startRotation, situations };
+  return { role, startRotation, libero, situations };
 }

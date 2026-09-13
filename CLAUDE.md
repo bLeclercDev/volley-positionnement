@@ -33,11 +33,14 @@ Séparation stricte logique / DOM, dans cet ordre de dépendance :
   Convention : `a` = voisin du passeur, `b` = voisin du pointu.
 - `src/positions.js` : données transcrites de la fiche (`POSITIONS[rotation].reception` et `.base1`),
   en coordonnées normalisées `[x, y]` dans `[0, 1]²` (x gauche→droite, y filet→fond). Les formations
-  sont indexées par **place** (`C` = central avant, `L` = libéro), et `positionsFor(rotation, phase)`
-  les traduit en **rôles** réels sur le terrain (le libéro disparaît quand le central arrière sert).
-- `src/session.js` : `buildSession({ role, startRotation })` construit la séquence déterministe des
-  situations (6 rotations × 3 phases `service` / `reception` / `apresReception`, en omettant celles
-  où le rôle n'est pas sur le terrain : 18 pour la plupart, 16 libéro, 10 central).
+  sont indexées par **place** (`C` = central avant, `L` = place du central arrière, tenue par le
+  libéro), et `positionsFor(rotation, phase, { libero })` les traduit en **rôles** réels sur le
+  terrain (le libéro disparaît quand le central arrière sert ; avec `libero: false` le central arrière
+  prend la place `L` partout, mêmes coordonnées).
+- `src/session.js` : `buildSession({ role, startRotation, libero })` construit la séquence déterministe
+  des situations (6 rotations × 3 phases `service` / `reception` / `apresReception`, en omettant celles
+  où le rôle n'est pas sur le terrain : 18 pour tous sauf 16 pour le libéro). Un central s'entraîne
+  sans libéro par défaut (`libero = !isCentral(role)`), pour apprendre les 18 places.
 - `src/evaluate.js` : `isHit` avec `TOLERANCE` ≈ 1 m (0.115 en unités normalisées).
 - `src/state.js` : machine à états **pure** (`role` → `question` → `feedback` → `summary`),
   `replayErrors` pose `replay: true` pour que le bilan ne compte pas comme meilleur score.

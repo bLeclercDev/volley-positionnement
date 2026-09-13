@@ -162,12 +162,14 @@ function animationLayer(sit) {
   } else {
     // Après réception : formation de réception en fantômes, réception (L) → passe (P) → attaque du R4 avant
     // au filet → le ballon repart chez eux, puis les fantômes s'effacent : à toi de te replacer.
-    const R = positionsFor(rotation, 'reception');
+    const R = positionsFor(rotation, 'reception', { libero: state.libero });
     const attack = [R[frontRowR4(rotation)][0], 0.08];
     const ghosts = Object.entries(R)
       .map(([role, [x, y]]) => token({ x, y, label: ROLES[role].short, id: role, kind: me(role) }))
       .join('');
-    inner = opp + `<g class="ghosts">${ghosts}</g>` + ball({ cls: 'fly-4', points: [OPP_BALL, R.L, R.P, attack, [1 - attack[0], -0.13]] });
+    // Sans libéro, c'est le central arrière qui réceptionne à sa place.
+    const receiver = R.L ?? R[backRowCentral(rotation)];
+    inner = opp + `<g class="ghosts">${ghosts}</g>` + ball({ cls: 'fly-4', points: [OPP_BALL, receiver, R.P, attack, [1 - attack[0], -0.13]] });
   }
   return `<g class="anim" pointer-events="none">${inner}</g>`;
 }
@@ -267,7 +269,7 @@ function inset(sit) {
   return `<details class="inset card" id="lineup"${showLineup ? ' open' : ''}>
       <summary>Ordre de rotation · P en ${sit.rotation}${server ? ` · serveur : ${esc(server)}` : ''}</summary>
       <div class="inset-body">
-        ${courtSvg({ tokens: lineupTokens(sit.rotation, { highlight: state.role, hideBackCentral: true }).map((t) => ({ ...t, r: 7 })) })}
+        ${courtSvg({ tokens: lineupTokens(sit.rotation, { highlight: state.role, hideBackCentral: state.libero }).map((t) => ({ ...t, r: 7 })) })}
         <div class="muted">
           ${constraint ? 'Contrainte à la frappe adverse : avants devant leurs arrières, ordre gauche/droite (règle 7.4).' : 'Simple rappel : l’équipe au service se place librement (règle 7.4, 2025).'}
         </div>
@@ -315,7 +317,7 @@ function renderQuestion() {
 function renderFeedback() {
   const sit = S.currentSituation(state);
   const result = state.results.at(-1);
-  const everyone = positionsFor(sit.rotation, sit.phase);
+  const everyone = positionsFor(sit.rotation, sit.phase, { libero: state.libero });
   const ghosts = Object.entries(everyone)
     .filter(([role]) => role !== state.role)
     .map(([role, [x, y]]) => ({ x, y, label: ROLES[role].short, kind: 'ghost', id: role }));

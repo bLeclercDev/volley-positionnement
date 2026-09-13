@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildSession, PHASE_LABEL } from '../src/session.js';
-import { positionsFor } from '../src/positions.js';
+import { positionsFor, POSITIONS } from '../src/positions.js';
 
 const phasesOf = (s) => s.situations.map((x) => x.phase);
 const rotationsOf = (s) => s.situations.map((x) => x.rotation);
@@ -59,12 +59,25 @@ describe('buildSession : la séquence service → réception → après récepti
     expect(s.situations.map((x) => x.index)).toEqual([...Array(16).keys()]);
   });
 
-  it('donne 10 situations à chaque central : 3 rotations en avant, plus le service de sa rotation en 1', () => {
-    const ca = buildSession({ role: 'Ca' });
+  it('donne 18 situations à chaque central : il joue sans libéro et prend sa place en arrière', () => {
+    for (const role of ['Ca', 'Cb']) {
+      const s = buildSession({ role });
+      expect(s.libero).toBe(false);
+      expect(s.situations).toHaveLength(18);
+      expect(new Set(s.situations.map((x) => x.rotation))).toEqual(new Set([1, 2, 3, 4, 5, 6]));
+    }
+    // Ca est arrière en P3 : sa position attendue est celle de la place du libéro.
+    const rec3 = buildSession({ role: 'Ca' }).situations.find((x) => x.rotation === 3 && x.phase === 'reception');
+    expect(rec3.expected).toEqual(POSITIONS[3].reception.L);
+  });
+
+  it('avec libéro, un central n a que 10 situations : 3 rotations en avant, plus le service de sa rotation en 1', () => {
+    const ca = buildSession({ role: 'Ca', libero: true });
+    expect(ca.libero).toBe(true);
     expect(ca.situations).toHaveLength(10);
     expect(ca.situations.filter((x) => x.rotation === 5).map((x) => x.phase)).toEqual(['service']);
     expect(new Set(ca.situations.map((x) => x.rotation))).toEqual(new Set([6, 1, 2, 5]));
-    const cb = buildSession({ role: 'Cb' });
+    const cb = buildSession({ role: 'Cb', libero: true });
     expect(cb.situations).toHaveLength(10);
     expect(cb.situations.filter((x) => x.rotation === 2).map((x) => x.phase)).toEqual(['service']);
     expect(new Set(cb.situations.map((x) => x.rotation))).toEqual(new Set([3, 4, 5, 2]));

@@ -57,6 +57,10 @@ export function frontRowCentral(rotation) {
   return backRowCentral(rotation) === 'Ca' ? 'Cb' : 'Ca';
 }
 
+export function isCentral(role) {
+  return role === 'Ca' || role === 'Cb';
+}
+
 export function frontRowR4(rotation) {
   return isFrontRow(zoneOf('R4a', rotation)) ? 'R4a' : 'R4b';
 }

@@ -4,7 +4,7 @@ import { buildSession } from './session.js';
 import { isHit } from './evaluate.js';
 
 export function initialState() {
-  return { screen: 'role', role: null, startRotation: 1, situations: [], current: 0, results: [], replay: false };
+  return { screen: 'role', role: null, startRotation: 1, libero: true, situations: [], current: 0, results: [], replay: false };
 }
 
 export function currentSituation(state) {
@@ -13,7 +13,7 @@ export function currentSituation(state) {
 
 export function start(state, { role, startRotation = 1 }) {
   const session = buildSession({ role, startRotation });
-  return { ...state, screen: 'question', role, startRotation, situations: session.situations, current: 0, results: [], replay: false };
+  return { ...state, screen: 'question', role, startRotation, libero: session.libero, situations: session.situations, current: 0, results: [], replay: false };
 }
 
 export function tap(state, point) {

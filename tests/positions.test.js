@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { POSITIONS, positionsFor, DATA_ROLES } from '../src/positions.js';
-import { lineup, isFrontRow, zoneOf, backRowCentral, serverOf, ROLE_ORDER } from '../src/rotation.js';
+import { POSITIONS, positionsFor, DATA_ROLES, PHASES } from '../src/positions.js';
+import { lineup, isFrontRow, zoneOf, backRowCentral, frontRowCentral, serverOf, ROLE_ORDER } from '../src/rotation.js';
 
 const ROTATIONS = [1, 2, 3, 4, 5, 6];
 const inUnit = ([x, y]) => x >= 0 && x <= 1 && y >= 0 && y <= 1;
@@ -83,6 +83,20 @@ describe('positionsFor : qui est sur le terrain', () => {
       const pos = positionsFor(k, 'service');
       expect(pos.L).toBeDefined();
       expect(pos[backRowCentral(k)]).toBeUndefined();
+    }
+  });
+
+  it('sans libéro, le central arrière prend la place L dans les 3 phases, les 5 autres ne bougent pas', () => {
+    for (const k of ROTATIONS) {
+      for (const phase of PHASES) {
+        const pos = positionsFor(k, phase, { libero: false });
+        const withL = positionsFor(k, phase);
+        const formation = phase === 'reception' ? POSITIONS[k].reception : POSITIONS[k].base1;
+        expect(pos.L, `P${k} ${phase}`).toBeUndefined();
+        expect(pos[backRowCentral(k)]).toEqual(formation.L);
+        expect(Object.keys(pos)).toHaveLength(6);
+        for (const r of ['P', 'O', 'R4a', 'R4b', frontRowCentral(k)]) expect(pos[r]).toEqual(withL[r]);
+      }
     }
   });
 

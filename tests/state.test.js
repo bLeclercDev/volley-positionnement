@@ -114,4 +114,11 @@ describe('machine à états de l entraînement', () => {
     const end = playAll(start(initialState(), { role: 'L', startRotation: 4 }), () => true);
     expect(summary(end)).toMatchObject({ total: 16, correct: 16 });
   });
+
+  it('start avec un central joue sans libéro : 18 situations', () => {
+    const started = start(initialState(), { role: 'Ca', startRotation: 2 });
+    expect(started.libero).toBe(false);
+    const end = playAll(started, () => true);
+    expect(summary(end)).toMatchObject({ total: 18, correct: 18 });
+  });
 });

@@ -62,7 +62,8 @@
 ## E. Tests
 
 - [ ] Avec un `random` stubé par séquence : progression du score, rotation seulement sur side-out,
-      fin de set correcte, libéro absent quand le central sert, position attendue présente partout.
+      fin de set correcte, libéro absent quand le central sert (ou sur toute la série d'un central),
+      position attendue présente partout.
 - [ ] Test statistique : sur 1000 sets, le serveur perd 70 % ± 3 %.
 
 ## Autres idées

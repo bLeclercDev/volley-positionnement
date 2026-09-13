@@ -5,7 +5,8 @@
 // Chaque formation donne 6 places :
 //   P, O, R4a, R4b : les rôles eux-mêmes
 //   C : le central AVANT de la rotation (Ca ou Cb, voir rotation.js)
-//   L : le libéro, qui occupe la place du central arrière (sauf quand ce central sert : P2 et P5)
+//   L : la place du central arrière, occupée par le libéro, ou par le central lui-même quand il sert
+//       (P2 et P5) ou quand l'équipe joue sans libéro (mêmes coordonnées, les 5 autres ne bougent pas)
 // `base1` sert pour les phases `service` et `apresReception` ; `reception` pour la phase `reception`.
 // Les coordonnées sont approximatives (lecture d'une photo).
 
@@ -121,8 +122,9 @@ export const PHASES = ['service', 'reception', 'apresReception'];
 /**
  * Positions des joueurs effectivement sur le terrain pour une rotation et une phase,
  * indexées par rôle (P, O, R4a, R4b, Ca ou Cb, L ou le central qui sert).
+ * `libero: false` : pas de libéro, le central arrière prend sa place dans toutes les phases.
  */
-export function positionsFor(rotation, phase) {
+export function positionsFor(rotation, phase, { libero = true } = {}) {
   if (!PHASES.includes(phase)) throw new Error(`Phase inconnue : ${phase}`);
   const formation = phase === 'reception' ? POSITIONS[rotation].reception : POSITIONS[rotation].base1;
   const result = {
@@ -133,7 +135,7 @@ export function positionsFor(rotation, phase) {
     [frontRowCentral(rotation)]: formation.C,
   };
   const backC = backRowCentral(rotation);
-  if (phase === 'service' && serverOf(rotation) === backC) result[backC] = formation.L;
+  if (!libero || (phase === 'service' && serverOf(rotation) === backC)) result[backC] = formation.L;
   else result.L = formation.L;
   return result;
 }

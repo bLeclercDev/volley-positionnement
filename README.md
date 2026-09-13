@@ -5,8 +5,8 @@ le score tourne, et à chaque situation on tape sa position sur le terrain.
 
 - 3 phases par rotation : **service** (on se place directement en base 1, règle FIVB 7.4 2025),
   **réception** (ordre de rotation obligatoire à la frappe adverse), **après réception** (retour en base 1).
-- 6 rotations × 3 phases = 18 situations (16 pour le libéro, 10 pour un central : ils ne sont pas
-  toujours sur le terrain).
+- 6 rotations × 3 phases = 18 situations (16 pour le libéro, absent quand le central sert). Un
+  central s'entraîne sans libéro : en arrière il prend la place du libéro, les autres ne bougent pas.
 - Tolérance : un cercle d'environ 1 m autour de la position attendue.
 - Bilan de fin, rejeu des erreurs, meilleur score par poste mémorisé dans le navigateur.
 

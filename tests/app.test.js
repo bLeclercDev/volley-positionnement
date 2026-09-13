@@ -144,7 +144,7 @@ describe('interface : du choix du poste au bilan', () => {
 
   it('le tableau des meilleurs scores est trié par % décroissant, vert à 100 % puis teinté selon le %', () => {
     localStorage.setItem('volley-positionnement:best:L', JSON.stringify({ correct: 16, total: 16 }));
-    localStorage.setItem('volley-positionnement:best:Ca', JSON.stringify({ correct: 5, total: 10 }));
+    localStorage.setItem('volley-positionnement:best:Ca', JSON.stringify({ correct: 9, total: 18 }));
     click('#roles button[data-role="P"]'); // re-rend l'écran de choix du poste
     const rows = [...document.querySelectorAll('.bests tbody tr')];
     expect(rows.map((r) => r.cells[0].textContent)).toEqual(['Libéro', 'Passeur', 'Central côté pointu']);
