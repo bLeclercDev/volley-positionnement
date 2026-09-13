@@ -73,10 +73,10 @@
 
 ## F. Outillage Claude Code
 
-- [ ] Lancer `/init` pour générer le `CLAUDE.md` du projet (stack, commandes `npm test` / `npm run serve`,
+- [x] Lancer `/init` pour générer le `CLAUDE.md` du projet (stack, commandes `npm test` / `npm run serve`,
       conventions du code).
 - [ ] Ajouter une règle qui empêche Claude de pousser : interdire `git push` dans les permissions
-      (`deny` dans `.claude/settings.json`) et le rappeler dans `CLAUDE.md`.
+      (`deny` dans `.claude/settings.json`). Déjà rappelé en tête de `CLAUDE.md`.
 
 ## Autres idées
 
