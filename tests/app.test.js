@@ -78,20 +78,20 @@ describe('interface : du choix du poste au bilan', () => {
     expect(text()).toContain('Situation 1/18');
   });
 
-  it('l encart « Ordre de rotation » est replié par défaut et son état survit au rendu suivant', () => {
+  it('l encart « Ordre de rotation » est ouvert par défaut et son état survit au rendu suivant', () => {
     const lineup = $('#lineup');
-    expect(lineup.open).toBe(false);
+    expect(lineup.open).toBe(true);
     expect(lineup.querySelector('summary').textContent).toContain('P en 1');
     expect(lineup.querySelector('summary').textContent).toContain('serveur : Passeur');
-    lineup.open = true;
+    lineup.open = false;
     lineup.dispatchEvent(new window.Event('toggle'));
   });
 
   it('un tap sur la bonne position donne un feedback positif, un tap loin un feedback négatif', () => {
     const session = buildSession({ role: 'P' });
     tapCourt(session.situations[0].expected);
-    expect($('#lineup').open).toBe(true); // état de l'encart conservé
-    $('#lineup').open = false;
+    expect($('#lineup').open).toBe(false); // état de l'encart conservé
+    $('#lineup').open = true;
     $('#lineup').dispatchEvent(new window.Event('toggle'));
     expect(text()).toContain('Bien placé');
     expect($('#next').textContent).toBe('Situation suivante');

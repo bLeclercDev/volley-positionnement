@@ -18,8 +18,9 @@ function dispatch(fn) {
   render();
 }
 
-// L'encart « Ordre de rotation » est replié par défaut (place sur mobile) ; on mémorise son état entre les rendus.
-let showLineup = false;
+// L'encart « Ordre de rotation » est ouvert par défaut : c'est le repère pour savoir d'où l'on part.
+// Il reste repliable, et on mémorise son état entre les rendus.
+let showLineup = true;
 
 function pickStartRotation() {
   return randomStart ? 1 + Math.floor(Math.random() * 6) : 1;

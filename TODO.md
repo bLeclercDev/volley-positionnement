@@ -61,7 +61,7 @@
       attaquant dans la bande adverse.
 - [x] Ergonomie mobile, défilement : le tap est validé au relâchement si le doigt n'a pas bougé
       (`bindTap` dans `src/app.js`), et `touch-action: pan-y` laisse le navigateur défiler depuis le terrain.
-- [x] Ergonomie mobile, agencement : encart « Ordre de rotation » replié (serveur dans son titre), ligne
+- [x] Ergonomie mobile, agencement : encart « Ordre de rotation » repliable, ouvert par défaut (serveur dans son titre), ligne
       sous la question sur une seule hauteur, légende du feedback sous le terrain, frise sans sous-titres
       sur petit écran. À 390 px de large, question et feedback tiennent sans défiler.
 
