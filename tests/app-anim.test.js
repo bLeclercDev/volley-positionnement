@@ -25,7 +25,9 @@ const $$ = (sel) => document.querySelectorAll(sel);
 const text = () => document.getElementById('app').textContent;
 const click = (sel) => $(sel).dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
 function tapCourt([x, y]) {
-  $('svg.answer').dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, clientX: x * 100, clientY: y * 100 }));
+  for (const type of ['pointerdown', 'pointerup']) {
+    $('svg.answer').dispatchEvent(new window.MouseEvent(type, { bubbles: true, clientX: x * 100, clientY: y * 100 }));
+  }
 }
 
 const VIEWBOX = '-8 -16 116 127';

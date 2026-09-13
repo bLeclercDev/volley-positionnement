@@ -22,9 +22,11 @@ const $ = (sel) => document.querySelector(sel);
 const farFrom = ([x, y]) => [x > 0.5 ? x - 0.5 : x + 0.5, y];
 const text = () => document.getElementById('app').textContent;
 const click = (sel) => $(sel).dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-function tapCourt([x, y]) {
-  const svg = $('svg.answer');
-  svg.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, clientX: x * 100, clientY: y * 100 }));
+const pointer = (type, [x, y]) => $('svg.answer').dispatchEvent(new window.MouseEvent(type, { bubbles: true, clientX: x * 100, clientY: y * 100 }));
+// Un tap = appui puis relâchement au même endroit.
+function tapCourt(p) {
+  pointer('pointerdown', p);
+  pointer('pointerup', p);
 }
 
 beforeAll(async () => {
@@ -61,9 +63,36 @@ describe('interface : du choix du poste au bilan', () => {
     expect(text()).toContain('Simple rappel');
   });
 
+  it('poser le doigt sans relâcher, glisser ou faire défiler ne valide pas la réponse', () => {
+    const session = buildSession({ role: 'P' });
+    const p = session.situations[0].expected;
+    pointer('pointerdown', p);
+    expect($('svg.answer')).not.toBeNull(); // appui seul : toujours en question
+    pointer('pointermove', farFrom(p));
+    pointer('pointerup', farFrom(p));
+    expect($('svg.answer')).not.toBeNull(); // glissé : ignoré
+    pointer('pointerdown', p);
+    pointer('pointercancel', p); // le navigateur a pris le geste pour un défilement
+    pointer('pointerup', p);
+    expect($('svg.answer')).not.toBeNull();
+    expect(text()).toContain('Situation 1/18');
+  });
+
+  it('l encart « Ordre de rotation » est replié par défaut et son état survit au rendu suivant', () => {
+    const lineup = $('#lineup');
+    expect(lineup.open).toBe(false);
+    expect(lineup.querySelector('summary').textContent).toContain('P en 1');
+    expect(lineup.querySelector('summary').textContent).toContain('serveur : Passeur');
+    lineup.open = true;
+    lineup.dispatchEvent(new window.Event('toggle'));
+  });
+
   it('un tap sur la bonne position donne un feedback positif, un tap loin un feedback négatif', () => {
     const session = buildSession({ role: 'P' });
     tapCourt(session.situations[0].expected);
+    expect($('#lineup').open).toBe(true); // état de l'encart conservé
+    $('#lineup').open = false;
+    $('#lineup').dispatchEvent(new window.Event('toggle'));
     expect(text()).toContain('Bien placé');
     expect($('#next').textContent).toBe('Situation suivante');
     click('#next');

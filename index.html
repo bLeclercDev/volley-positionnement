@@ -44,12 +44,17 @@
     .badge.serve { background: #e3f2e8; color: #1f6b3d; }
     .badge.receive { background: #fbe9e7; color: #8a2f28; }
     .question { font-size: 1.05rem; font-weight: 600; margin: 8px 0; }
-    /* Ligne sous la question : hauteur réservée (2 lignes) pour que le terrain ne bouge pas entre question et feedback. */
-    .lead { font-size: 0.95rem; line-height: 1.4; min-height: 2.8em; margin: 6px 0 8px; }
-    svg.court { width: 100%; height: auto; display: block; touch-action: none; user-select: none; }
+    /* Ligne sous la question : hauteur réservée (1 ligne) pour que le terrain ne bouge pas entre question et feedback. */
+    .lead { font-size: 0.95rem; line-height: 1.4; min-height: 1.4em; margin: 6px 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .legend { font-size: 0.85rem; margin: 4px 0 8px; }
+    /* pan-y : le doigt peut faire défiler la page depuis le terrain ; le tap est validé au relâchement (bindTap). */
+    svg.court { width: 100%; height: auto; display: block; touch-action: pan-y; user-select: none; }
     svg.court.tappable { cursor: crosshair; }
-    .inset { display: flex; gap: 12px; align-items: center; }
-    .inset svg { width: 120px; flex: none; }
+    svg.court.edit { touch-action: none; } /* glisser les pions */
+    details.inset { padding: 8px 14px; }
+    details.inset summary { cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--muted); }
+    .inset-body { display: flex; gap: 12px; align-items: center; margin-top: 8px; }
+    .inset-body svg { width: 120px; flex: none; }
     .verdict { font-weight: 700; }
     .verdict.ok { color: var(--ok); }
     .verdict.ko { color: var(--ko); }
@@ -71,6 +76,11 @@
     .phases li.done { opacity: 0.55; }
     .phases li + li { position: relative; }
     .phases li + li::before { content: '→'; position: absolute; left: -7px; top: 4px; color: var(--line); }
+    /* Petits écrans : la frise garde seulement le nom des phases, pour que le terrain reste visible sans défiler. */
+    @media (max-width: 480px) {
+      .phases li span { display: none; }
+      .phases li { padding: 3px 2px; }
+    }
 
     /* Couche animée de l'écran de question : elle raconte la phase et ne capte aucun tap. */
     svg.court .anim, svg.court .anim * { pointer-events: none; }

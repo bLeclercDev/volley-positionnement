@@ -18,6 +18,9 @@ function dispatch(fn) {
   render();
 }
 
+// L'encart « Ordre de rotation » est replié par défaut (place sur mobile) ; on mémorise son état entre les rendus.
+let showLineup = false;
+
 function pickStartRotation() {
   return randomStart ? 1 + Math.floor(Math.random() * 6) : 1;
 }
@@ -84,6 +87,31 @@ function courtSvg({ tokens = [], extra = '', tappable = false, cls = '' }) {
     ${extra}
     ${tokens.map(token).join('')}
   </svg>`;
+}
+
+// Tap sur le terrain de réponse : validé au relâchement, seulement si le doigt n'a pas bougé. Poser le doigt
+// pour faire défiler la page ne répond donc pas (touch-action: pan-y laisse le navigateur défiler, et il envoie
+// alors un pointercancel). La position retenue est celle de l'appui.
+const TAP_SLOP = 10; // px écran
+
+function bindTap(svg, onTap) {
+  let down = null;
+  svg.addEventListener('pointerdown', (e) => {
+    if (e.button) return;
+    down = { id: e.pointerId, x: e.clientX, y: e.clientY, point: svgPoint(svg, e) };
+  });
+  svg.addEventListener('pointermove', (e) => {
+    if (down && e.pointerId === down.id && Math.hypot(e.clientX - down.x, e.clientY - down.y) > TAP_SLOP) down = null;
+  });
+  svg.addEventListener('pointercancel', () => {
+    down = null;
+  });
+  svg.addEventListener('pointerup', (e) => {
+    if (!down || e.pointerId !== down.id) return;
+    const { point } = down;
+    down = null;
+    onTap(point);
+  });
 }
 
 function svgPoint(svg, event) {
@@ -216,14 +244,15 @@ function header(sit) {
 function inset(sit) {
   const constraint = sit.phase === 'reception';
   const server = sit.weServe ? ROLES[serverOf(sit.rotation)].label : null;
-  return `<div class="inset card">
-      ${courtSvg({ tokens: lineupTokens(sit.rotation, { highlight: state.role, hideBackCentral: true }).map((t) => ({ ...t, r: 7 })) })}
-      <div class="muted">
-        <strong>Ordre de rotation</strong><br>
-        ${constraint ? 'Contrainte à la frappe adverse : avants devant leurs arrières, ordre gauche/droite (règle 7.4).' : 'Simple rappel : l’équipe au service se place librement (règle 7.4, 2025).'}
-        ${server ? `<br>Serveur : ${esc(server)}.` : ''}
+  return `<details class="inset card" id="lineup"${showLineup ? ' open' : ''}>
+      <summary>Ordre de rotation · P en ${sit.rotation}${server ? ` · serveur : ${esc(server)}` : ''}</summary>
+      <div class="inset-body">
+        ${courtSvg({ tokens: lineupTokens(sit.rotation, { highlight: state.role, hideBackCentral: true }).map((t) => ({ ...t, r: 7 })) })}
+        <div class="muted">
+          ${constraint ? 'Contrainte à la frappe adverse : avants devant leurs arrières, ordre gauche/droite (règle 7.4).' : 'Simple rappel : l’équipe au service se place librement (règle 7.4, 2025).'}
+        </div>
       </div>
-    </div>`;
+    </details>`;
 }
 
 // Barre d'actions commune aux écrans de jeu : recommencer la série ou changer de poste.
@@ -235,6 +264,9 @@ function tools() {
 }
 
 function bindTools() {
+  app.querySelector('#lineup')?.addEventListener('toggle', (e) => {
+    showLineup = e.target.open;
+  });
   const started = state.current > 0 || state.results.length > 0;
   const ok = (msg) => !started || window.confirm(msg);
   app.querySelector('#reset').addEventListener('click', () => {
@@ -250,15 +282,11 @@ function renderQuestion() {
   app.innerHTML = `
     ${header(sit)}
     <p class="question">${esc(PHASE_LABEL[sit.phase])}</p>
-    <p class="lead muted">Tu es <strong>${esc(ROLES[state.role].label)}</strong>. Tape ta position sur le terrain. <button type="button" id="rewatch" class="link">↻ revoir</button></p>
+    <p class="lead muted">Tu es <strong>${esc(ROLES[state.role].label)}</strong>, tape ta position. <button type="button" id="rewatch" class="link">↻ revoir</button></p>
     ${courtSvg({ tappable: true, cls: 'answer', extra: animationLayer(sit) })}
     ${inset(sit)}
     ${tools()}`;
-  const svg = app.querySelector('svg.answer');
-  svg.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    dispatch((s) => S.tap(s, svgPoint(svg, e)));
-  });
+  bindTap(app.querySelector('svg.answer'), (point) => dispatch((s) => S.tap(s, point)));
   // Re-rendre recrée les nœuds SVG : les animations CSS repartent de zéro.
   app.querySelector('#rewatch').addEventListener('click', renderQuestion);
   bindTools();
@@ -283,8 +311,9 @@ function renderFeedback() {
   app.innerHTML = `
     ${header(sit)}
     <p class="question">${esc(PHASE_LABEL[sit.phase])}</p>
-    <p class="lead"><span class="verdict ${result.hit ? 'ok' : 'ko'}">${result.hit ? 'Bien placé !' : 'Pas là.'}</span> <span class="muted">La croix est ton tap, le cercle la zone attendue.</span></p>
+    <p class="lead"><span class="verdict ${result.hit ? 'ok' : 'ko'}">${result.hit ? 'Bien placé !' : 'Pas là.'}</span></p>
     ${courtSvg({ tokens, extra })}
+    <p class="muted legend">La croix est ton tap, le cercle la zone attendue.</p>
     ${sit.note ? `<p class="note">${esc(sit.note)}</p>` : ''}
     <button class="primary wide" id="next">${state.current + 1 < state.situations.length ? 'Situation suivante' : 'Voir le bilan'}</button>
     ${inset(sit)}
