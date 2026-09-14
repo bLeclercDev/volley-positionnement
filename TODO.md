@@ -14,6 +14,49 @@
 - Garder le mode actuel (« Tour complet », 18 situations déterministes) : meilleur pour apprendre,
   le match aléatoire sert à tester.
 
+## Architecture : pas de refacto global avant les features
+
+Conclusion : l'archi actuelle (700 lignes, séparation pure / DOM) suffit pour finir ce backlog.
+Chaque bloc a déjà sa place : A dans `positions.js`, B dans un nouveau module à côté de `session.js`,
+C dans `state.js` + stockage, E en tests purs avec `random` injecté. On ne refactore que ce que la
+feature touche, au moment où elle le touche :
+
+- **Contrat de `situation` à figer avant B** (conception, pas refacto) : ajouter `rally` (index
+  d'échange), `origin` (origine d'attaque) et la liste des phases de l'échange. `buildSession` et
+  `simulateSet` produisent la même forme, l'interface n'a qu'un seul cas à gérer.
+- **Frise des phases** : `phaseStrip` lit `PHASES` en dur ; pour D elle lira la liste portée par la
+  situation. Un paramètre de plus.
+- **Meilleur score** : sortir `readBest`/`saveBest` d'`app.js` vers un `best.js` avec le stockage
+  injecté, au moment de passer au % (C). Testable sans jsdom, `app.js` perd 40 lignes.
+- **`state.start`** appelle `buildSession` en dur : ajouter un champ `mode` (tour complet / fin de
+  set) et la graine dans l'état pour B.
+- Si `app.js` dépasse ~500 lignes avec D, découper en un fichier par écran, sans toucher à la logique.
+
+## Structure : menu et trois pages
+
+Décision : **plusieurs fichiers HTML** plutôt qu'un routeur. Pas de composants : les fonctions qui
+rendent des chaînes de template (`courtSvg`, `phaseStrip`) jouent déjà ce rôle. Compatible GitHub
+Pages tel quel (chemins relatifs). Un routeur par hash marcherait aussi, un routeur par chemin
+(`/cours`) ferait 404 sur GitHub Pages : à éviter.
+
+Pourquoi le multi-page : le cours est surtout du texte, plus simple en HTML direct qu'en chaînes JS
+échappées ; chaque page ne charge que son JS ; retour navigateur et liens partageables natifs ; aucun
+code de routage à tester.
+
+- [ ] `index.html` : menu vers les trois pages.
+- [ ] `cours.html` : théorie des positions et explications (rotation 5-1, règle 7.4, rôles), avec des
+      terrains statiques en illustration via `courtSvg` + `positionsFor`.
+- [ ] `placements.html` : explorateur des placements de base. Sélecteur de rotation et onglets
+      service / réception / replacement, tous les pions affichés. ~60 lignes, tout est dans
+      `positions.js`. Bouton « Tester ce poste » qui ouvre `jeu.html?role=P` (paramètre d'URL lu
+      au démarrage).
+- [ ] `jeu.html` : l'actuel `app.js` inchangé (tour complet + fin de set aléatoire quand B sera fait).
+- [ ] Travaux préparatoires : sortir le CSS d'`index.html` vers un `style.css` partagé (mettre à jour
+      CLAUDE.md, qui dit « tout le CSS dans index.html ») ; extraire `src/court.js` (`courtSvg`,
+      `token`, `lineupTokens`, `esc`, `SCALE`), ~80 lignes déplacées, `app.js` les importe.
+- Tests jsdom : ils importent `src/app.js` et construisent leur propre `#app`, indépendants
+  d'`index.html`. Rien ne casse.
+
 ## A. Données : positions sur les attaques adverses
 
 - [ ] Décider ce qu'on couvre : défense quand l'adversaire attaque depuis leur zone 4, 3 (ou pipe)
@@ -54,7 +97,8 @@
 
 ## D. Interface
 
-- [ ] Écran de départ : choix « Tour complet » ou « Fin de set », affichage de la graine.
+- [ ] Écran de départ de `jeu.html` : choix « Tour complet » ou « Fin de set », affichage de la
+      graine, rôle présélectionné si `?role=` est présent.
 - [ ] Frise des phases dynamique par échange (service → défense, ou réception → base 1 → défense).
 - [ ] Libellé et animation par origine : « Ils attaquent en 4, où es-tu ? », balle partant de leur
       attaquant dans la bande adverse.
