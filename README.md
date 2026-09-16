@@ -33,12 +33,9 @@ Le hook `.githooks/pre-commit` lance les tests avant chaque commit. Après un cl
 git config core.hooksPath .githooks
 ```
 
-## Héberger (GitHub Pages)
+## En ligne
 
-1. Créer un repo `volley-positionnement` sur github.com.
-2. `git remote add origin https://github.com/<compte>/volley-positionnement.git && git push -u origin main`
-3. Settings → Pages → Source : branche `main`, dossier `/ (root)`.
-4. Partager `https://<compte>.github.io/volley-positionnement/`.
+Hébergée sur GitHub Pages : https://bleclercdev.github.io/volley-positionnement/
 
 ## Ajuster les positions
 
