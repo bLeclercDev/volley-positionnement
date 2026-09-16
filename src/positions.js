@@ -15,7 +15,7 @@ import { backRowCentral, frontRowCentral, serverOf } from './rotation.js';
 export const DATA_ROLES = ['P', 'O', 'R4a', 'R4b', 'C', 'L'];
 
 // BASE 1 : même dessin dans les 6 rotations. Avants au filet (R4 à gauche, C au centre, P ou O à droite),
-// libéro/central arrière en 5, P ou O arrière en 1, R4 arrière au fond en 6.
+// R4 arrière en 5 derrière le R4 avant, P ou O arrière en 1, libéro/central arrière au fond en 6.
 const FRONT_LEFT = [0.15, 0.1];
 const FRONT_CENTER = [0.5, 0.1];
 const FRONT_RIGHT = [0.85, 0.1];
@@ -25,12 +25,12 @@ const BACK_DEEP = [0.5, 0.82];
 
 function base1({ frontR4, setterFront }) {
   return {
-    R4a: frontR4 === 'R4a' ? FRONT_LEFT : BACK_DEEP,
-    R4b: frontR4 === 'R4b' ? FRONT_LEFT : BACK_DEEP,
+    R4a: frontR4 === 'R4a' ? FRONT_LEFT : BACK_LEFT,
+    R4b: frontR4 === 'R4b' ? FRONT_LEFT : BACK_LEFT,
     C: FRONT_CENTER,
     P: setterFront ? FRONT_RIGHT : BACK_RIGHT,
     O: setterFront ? BACK_RIGHT : FRONT_RIGHT,
-    L: BACK_LEFT,
+    L: BACK_DEEP,
   };
 }
 

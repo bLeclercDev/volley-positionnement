@@ -48,13 +48,19 @@ describe('données de positions (transcription de la fiche)', () => {
     }
   });
 
-  it('en base 1, les trois avants sont au filet (zone avant) et le R4 arrière est au fond', () => {
+  it('en base 1, les trois avants sont au filet, le R4 arrière derrière le R4 avant et le libéro au fond', () => {
     for (const k of ROTATIONS) {
       const pos = positionsFor(k, 'apresReception');
       const frontRoles = ROLE_ORDER.filter((r) => isFrontRow(zoneOf(r, k)));
       for (const r of frontRoles) expect(pos[r][1], `P${k} ${r} avant au filet`).toBeLessThan(1 / 3);
-      const backR4 = frontRoles.includes('R4a') ? 'R4b' : 'R4a';
-      expect(pos[backR4][1], `P${k} ${backR4} au fond`).toBeGreaterThan(0.7);
+      // Le R4 arrière ne prend plus le fond : il défend dans le couloir de son R4 avant, derrière les 3 m.
+      const frontR4 = frontRoles.includes('R4a') ? 'R4a' : 'R4b';
+      const backR4 = frontR4 === 'R4a' ? 'R4b' : 'R4a';
+      expect(Math.abs(pos[backR4][0] - pos[frontR4][0]), `P${k} ${backR4} dans le couloir du ${frontR4}`).toBeLessThan(0.05);
+      expect(pos[backR4][1], `P${k} ${backR4} en zone arrière`).toBeGreaterThan(1 / 3);
+      // Le libéro (ou le central arrière sans libéro) reprend le fond au centre.
+      expect(pos.L[1], `P${k} libéro au fond`).toBeGreaterThan(0.7);
+      expect(Math.abs(pos.L[0] - 0.5), `P${k} libéro au centre`).toBeLessThan(0.1);
     }
   });
 });
